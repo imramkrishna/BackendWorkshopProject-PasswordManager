@@ -23,19 +23,19 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = async (email, password) => {
+  const login = async (email, password, name) => {
     setLoading(true);
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       const userData = {
         id: 1,
         email,
-        name: email.split('@')[0],
+        name: name,
         createdAt: new Date().toISOString()
       };
-      
+
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
       setLoading(false);
@@ -51,14 +51,14 @@ export const AuthProvider = ({ children }) => {
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       const userData = {
         id: 1,
         email,
         name,
         createdAt: new Date().toISOString()
       };
-      
+
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));
       setLoading(false);
