@@ -3,7 +3,8 @@ import User from "./Schema/userSchema.js";
 import dotenv from "dotenv";
 import connectDB from "./db/connectDB.js";
 import cors from "cors";
-
+import PasswordModel from "./Schema/passwordSchema.js";
+import encryptPassword from "./utils/encrypt.js";
 dotenv.config();
 
 const app = express();
@@ -19,6 +20,19 @@ app.get("/", (req, res) => {
     res.send("Server is running")
 })
 
+app.post("/addPassword", async (req, res) => {
+    try {
+        const { id, title, password, email, notes, website, category, username } = req.body;
+        console.log("Received data:", req.body);
+        const encryptedPassword = await encryptPassword(password);
+        const newPassword = new PasswordModel({ userId: id, title, password: encryptedPassword, email, notes, website, category, username });
+        await newPassword.save();
+        res.status(201).json({ message: "Password added successfully", password: newPassword });
+    } catch (error) {
+        console.error("Error adding password:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
+})
 app.post("/register", async (req, res) => {
     try {
         const { email, password, name } = req.body;

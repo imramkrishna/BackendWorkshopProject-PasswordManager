@@ -34,7 +34,7 @@ const Login = () => {
     try {
       const response = await axios.post(`${API_URL}/login`, formData);
       navigate('/dashboard');
-      login(response.data.user.email, response.data.user.password, response.data.user.name);
+      login(response.data.user.email, response.data.user.password, response.data.user.name, response.data.user._id);
     } catch (error) {
       console.error('Login error:', error);
       setError('Failed to log in. Please try again.');

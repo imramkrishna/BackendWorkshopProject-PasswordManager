@@ -46,14 +46,14 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (name, email, password) => {
+  const register = async (name, email, password, id) => {
     setLoading(true);
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       const userData = {
-        id: 1,
+        id: id,
         email,
         name,
         createdAt: new Date().toISOString()

@@ -3,6 +3,8 @@ import { usePasswords } from '../contexts/PasswordContext';
 import { useAuth } from '../contexts/AuthContext';
 import { Plus, Search, Eye, EyeOff, Edit, Trash2, Globe, Mail, Smartphone, CreditCard, Lock } from 'lucide-react';
 import { LoadingOverlay } from '../components/Loading';
+import axios from 'axios';
+import { API_URL } from '../config';
 
 const Dashboard = () => {
   const { passwords, addPassword, updatePassword, deletePassword, loading } = usePasswords();
@@ -13,6 +15,7 @@ const Dashboard = () => {
   const [visiblePasswords, setVisiblePasswords] = useState(new Set());
 
   const [newPassword, setNewPassword] = useState({
+    id: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).id : null,
     title: '',
     website: '',
     email: '',
@@ -59,7 +62,7 @@ const Dashboard = () => {
         setEditingPassword(null);
       }
     } else {
-      const result = await addPassword(newPassword);
+      const result = await axios.post(`${API_URL}/addPassword`, newPassword);
       if (result.success) {
         setNewPassword({
           title: '',
