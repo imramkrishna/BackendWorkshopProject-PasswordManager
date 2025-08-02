@@ -31,9 +31,10 @@ const Dashboard = () => {
   ];
 
   const filteredPasswords = passwords.filter(pwd =>
-    pwd.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    pwd.website.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    pwd.email.toLowerCase().includes(searchTerm.toLowerCase())
+    pwd.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    pwd.website?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    pwd.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    pwd.username?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const generatePassword = () => {
@@ -51,7 +52,7 @@ const Dashboard = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (editingPassword) {
       const result = await updatePassword(editingPassword.id, editingPassword);
       if (result.success) {
@@ -98,10 +99,10 @@ const Dashboard = () => {
   return (
     <LoadingOverlay loading={loading}>
       <div className="min-h-screen p-4 sm:p-6 lg:p-8">
-        <div className="max-w-7xl mx-auto">
+        <div className="mx-auto max-w-7xl">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
+            <h1 className="mb-2 text-3xl font-bold text-white md:text-4xl">
               Welcome back, {user?.name}!
             </h1>
             <p className="text-white/70">
@@ -110,76 +111,76 @@ const Dashboard = () => {
           </div>
 
           {/* Search and Add */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-8">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-white/40" />
+          <div className="flex flex-col gap-4 mb-8 sm:flex-row">
+            <div className="relative flex-1">
+              <Search className="absolute w-5 h-5 transform -translate-y-1/2 left-3 top-1/2 text-white/40" />
               <input
                 type="text"
                 placeholder="Search passwords..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="input-field pl-10 pr-4 backdrop-blur-lg"
+                className="pl-10 pr-4 input-field backdrop-blur-lg"
               />
             </div>
             <button
               onClick={() => setShowAddModal(true)}
-              className="btn-primary px-6 py-3 flex items-center space-x-2"
+              className="flex items-center px-6 py-3 space-x-2 btn-primary"
             >
-              <Plus className="h-5 w-5" />
+              <Plus className="w-5 h-5" />
               <span>Add Password</span>
             </button>
           </div>
 
           {/* Passwords Grid */}
           {filteredPasswords.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="text-white/40 text-6xl mb-4">🔒</div>
-              <h3 className="text-xl font-semibold text-white mb-2">
+            <div className="py-12 text-center">
+              <div className="mb-4 text-6xl text-white/40">🔒</div>
+              <h3 className="mb-2 text-xl font-semibold text-white">
                 {searchTerm ? 'No passwords found' : 'No passwords yet'}
               </h3>
-              <p className="text-white/60 mb-6">
+              <p className="mb-6 text-white/60">
                 {searchTerm ? 'Try adjusting your search terms' : 'Start by adding your first password to secure your accounts'}
               </p>
               {!searchTerm && (
                 <button
                   onClick={() => setShowAddModal(true)}
-                  className="btn-primary px-6 py-3"
+                  className="px-6 py-3 btn-primary"
                 >
                   Add Your First Password
                 </button>
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {filteredPasswords.map((password) => {
                 const CategoryIcon = getCategoryIcon(password.category);
                 return (
                   <div
                     key={password.id}
-                    className="card p-6"
+                    className="p-6 card"
                   >
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center space-x-3">
-                        <CategoryIcon className="h-8 w-8 text-blue-400" />
+                        <CategoryIcon className="w-8 h-8 text-blue-400" />
                         <div>
-                          <h3 className="font-semibold text-white text-lg">{password.title}</h3>
+                          <h3 className="text-lg font-semibold text-white">{password.title}</h3>
                           {password.website && (
-                            <p className="text-white/60 text-sm">{password.website}</p>
+                            <p className="text-sm text-white/60">{password.website}</p>
                           )}
                         </div>
                       </div>
                       <div className="flex space-x-2">
                         <button
                           onClick={() => setEditingPassword(password)}
-                          className="text-white/60 hover:text-blue-400 transition-colors"
+                          className="transition-colors text-white/60 hover:text-blue-400"
                         >
-                          <Edit className="h-4 w-4" />
+                          <Edit className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDelete(password.id)}
-                          className="text-white/60 hover:text-red-400 transition-colors"
+                          className="transition-colors text-white/60 hover:text-red-400"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </div>
@@ -187,31 +188,31 @@ const Dashboard = () => {
                     <div className="space-y-3">
                       {password.email && (
                         <div>
-                          <label className="text-white/60 text-xs uppercase tracking-wide">Email</label>
-                          <p className="text-white text-sm">{password.email}</p>
+                          <label className="text-xs tracking-wide uppercase text-white/60">Email</label>
+                          <p className="text-sm text-white">{password.email}</p>
                         </div>
                       )}
-                      
+
                       {password.username && (
                         <div>
-                          <label className="text-white/60 text-xs uppercase tracking-wide">Username</label>
-                          <p className="text-white text-sm">{password.username}</p>
+                          <label className="text-xs tracking-wide uppercase text-white/60">Username</label>
+                          <p className="text-sm text-white">{password.username}</p>
                         </div>
                       )}
 
                       <div>
-                        <label className="text-white/60 text-xs uppercase tracking-wide">Password</label>
-                        <div className="flex items-center space-x-2 mt-1">
-                          <p className="text-white text-sm font-mono flex-1">
+                        <label className="text-xs tracking-wide uppercase text-white/60">Password</label>
+                        <div className="flex items-center mt-1 space-x-2">
+                          <p className="flex-1 font-mono text-sm text-white">
                             {visiblePasswords.has(password.id) ? password.password : '••••••••••••'}
                           </p>
                           <button
                             onClick={() => togglePasswordVisibility(password.id)}
-                            className="text-white/60 hover:text-white transition-colors"
+                            className="transition-colors text-white/60 hover:text-white"
                           >
-                            {visiblePasswords.has(password.id) ? 
-                              <EyeOff className="h-4 w-4" /> : 
-                              <Eye className="h-4 w-4" />
+                            {visiblePasswords.has(password.id) ?
+                              <EyeOff className="w-4 h-4" /> :
+                              <Eye className="w-4 h-4" />
                             }
                           </button>
                         </div>
@@ -219,14 +220,14 @@ const Dashboard = () => {
 
                       {password.notes && (
                         <div>
-                          <label className="text-white/60 text-xs uppercase tracking-wide">Notes</label>
-                          <p className="text-white/80 text-sm">{password.notes}</p>
+                          <label className="text-xs tracking-wide uppercase text-white/60">Notes</label>
+                          <p className="text-sm text-white/80">{password.notes}</p>
                         </div>
                       )}
                     </div>
 
-                    <div className="mt-4 pt-4 border-t border-white/10">
-                      <p className="text-white/40 text-xs">
+                    <div className="pt-4 mt-4 border-t border-white/10">
+                      <p className="text-xs text-white/40">
                         Added {new Date(password.createdAt).toLocaleDateString()}
                       </p>
                     </div>
@@ -238,15 +239,15 @@ const Dashboard = () => {
 
           {/* Add/Edit Modal */}
           {(showAddModal || editingPassword) && (
-            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
               <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 w-full max-w-md max-h-[90vh] overflow-y-auto">
-                <h2 className="text-2xl font-bold text-white mb-6">
+                <h2 className="mb-6 text-2xl font-bold text-white">
                   {editingPassword ? 'Edit Password' : 'Add New Password'}
                 </h2>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-white/80 mb-2">Title</label>
+                    <label className="block mb-2 text-sm font-medium text-white/80">Title</label>
                     <input
                       type="text"
                       required
@@ -264,7 +265,7 @@ const Dashboard = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-white/80 mb-2">Category</label>
+                    <label className="block mb-2 text-sm font-medium text-white/80">Category</label>
                     <select
                       value={editingPassword ? editingPassword.category : newPassword.category}
                       onChange={(e) => {
@@ -285,7 +286,7 @@ const Dashboard = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-white/80 mb-2">Website (Optional)</label>
+                    <label className="block mb-2 text-sm font-medium text-white/80">Website (Optional)</label>
                     <input
                       type="url"
                       value={editingPassword ? editingPassword.website : newPassword.website}
@@ -302,7 +303,7 @@ const Dashboard = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-white/80 mb-2">Email (Optional)</label>
+                    <label className="block mb-2 text-sm font-medium text-white/80">Email (Optional)</label>
                     <input
                       type="email"
                       value={editingPassword ? editingPassword.email : newPassword.email}
@@ -319,7 +320,7 @@ const Dashboard = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-white/80 mb-2">Username (Optional)</label>
+                    <label className="block mb-2 text-sm font-medium text-white/80">Username (Optional)</label>
                     <input
                       type="text"
                       value={editingPassword ? editingPassword.username : newPassword.username}
@@ -336,7 +337,7 @@ const Dashboard = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-white/80 mb-2">Password</label>
+                    <label className="block mb-2 text-sm font-medium text-white/80">Password</label>
                     <div className="flex space-x-2">
                       <input
                         type="text"
@@ -349,13 +350,13 @@ const Dashboard = () => {
                             setNewPassword({ ...newPassword, password: e.target.value });
                           }
                         }}
-                        className="input-field flex-1 font-mono"
+                        className="flex-1 font-mono input-field"
                         placeholder="Enter or generate password"
                       />
                       <button
                         type="button"
                         onClick={generatePassword}
-                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg transition-colors"
+                        className="px-4 py-3 text-white transition-colors bg-green-600 rounded-lg hover:bg-green-700"
                       >
                         Generate
                       </button>
@@ -363,7 +364,7 @@ const Dashboard = () => {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-white/80 mb-2">Notes (Optional)</label>
+                    <label className="block mb-2 text-sm font-medium text-white/80">Notes (Optional)</label>
                     <textarea
                       value={editingPassword ? editingPassword.notes : newPassword.notes}
                       onChange={(e) => {
@@ -374,12 +375,12 @@ const Dashboard = () => {
                         }
                       }}
                       rows={3}
-                      className="input-field resize-none"
+                      className="resize-none input-field"
                       placeholder="Additional notes..."
                     />
                   </div>
 
-                  <div className="flex space-x-4 pt-4">
+                  <div className="flex pt-4 space-x-4">
                     <button
                       type="submit"
                       className="flex-1 btn-primary"
@@ -392,7 +393,7 @@ const Dashboard = () => {
                         setShowAddModal(false);
                         setEditingPassword(null);
                       }}
-                      className="flex-1 bg-white/10 hover:bg-white/20 text-white py-3 px-4 rounded-lg font-semibold transition-all border border-white/20"
+                      className="flex-1 px-4 py-3 font-semibold text-white transition-all border rounded-lg bg-white/10 hover:bg-white/20 border-white/20"
                     >
                       Cancel
                     </button>
