@@ -23,18 +23,11 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = async (email, password, name) => {
+  const login = async (userData) => {
     setLoading(true);
     try {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
-
-      const userData = {
-        id: 1,
-        email,
-        name: name,
-        createdAt: new Date().toISOString()
-      };
 
       setUser(userData);
       localStorage.setItem('user', JSON.stringify(userData));

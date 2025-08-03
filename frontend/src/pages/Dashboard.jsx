@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePasswords } from '../contexts/PasswordContext';
 import { useAuth } from '../contexts/AuthContext';
 import { Plus, Search, Eye, EyeOff, Edit, Trash2, Globe, Mail, Smartphone, CreditCard, Lock } from 'lucide-react';
@@ -7,7 +7,7 @@ import axios from 'axios';
 import { API_URL } from '../config';
 
 const Dashboard = () => {
-  const { passwords, addPassword, updatePassword, deletePassword, loading } = usePasswords();
+  const { passwords, addPassword, updatePassword, deletePassword, setPasswordsFromAPI, loading } = usePasswords();
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
@@ -15,7 +15,7 @@ const Dashboard = () => {
   const [visiblePasswords, setVisiblePasswords] = useState(new Set());
 
   const [newPassword, setNewPassword] = useState({
-    id: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).id : null,
+    userId: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user'))._id : null,
     title: '',
     website: '',
     email: '',
@@ -24,6 +24,48 @@ const Dashboard = () => {
     notes: '',
     category: 'website'
   });
+
+  useEffect(() => {
+    const fetchPasswords = async () => {
+      if (!user?.id && !user?._id) {
+        console.log('No user ID available');
+        return;
+      }
+
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.log('No token available');
+          return;
+        }
+
+        console.log('Fetching passwords...');
+        const response = await axios.get(`${API_URL}/profile`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        console.log('API Response:', response.data);
+
+        if (response.data.passwords && Array.isArray(response.data.passwords)) {
+          setPasswordsFromAPI(response.data.passwords);
+          console.log('Passwords set:', response.data.passwords);
+        } else {
+          console.log('No passwords in response or invalid format');
+        }
+
+      } catch (error) {
+        console.error('Error fetching passwords:', error);
+        if (error.response) {
+          console.error('Error status:', error.response.status);
+          console.error('Error data:', error.response.data);
+        }
+      }
+    };
+
+    fetchPasswords();
+  }, [user]);
 
   const categories = [
     { value: 'website', label: 'Website', icon: Globe },
@@ -62,18 +104,29 @@ const Dashboard = () => {
         setEditingPassword(null);
       }
     } else {
-      const result = await axios.post(`${API_URL}/addPassword`, newPassword);
-      if (result.success) {
-        setNewPassword({
-          title: '',
-          website: '',
-          email: '',
-          username: '',
-          password: '',
-          notes: '',
-          category: 'website'
+      try {
+        const response = await axios.post(`${API_URL}/addPassword`, newPassword, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
         });
-        setShowAddModal(false);
+
+        if (response.status === 200 || response.status === 201) {
+          setNewPassword({
+            userId: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user'))._id : null,
+            title: '',
+            website: '',
+            email: '',
+            username: '',
+            password: '',
+            notes: '',
+            category: 'website'
+          });
+          setShowAddModal(false);
+          window.location.reload();
+        }
+      } catch (error) {
+        console.error('Error adding password:', error);
       }
     }
   };
@@ -84,14 +137,19 @@ const Dashboard = () => {
     }
   };
 
-  const togglePasswordVisibility = (id) => {
+  // Fix: Improved toggle function with better ID handling
+  const togglePasswordVisibility = (passwordId) => {
+    console.log('Toggling password visibility for ID:', passwordId);
+    console.log('Current visible passwords:', visiblePasswords);
+
     const newVisible = new Set(visiblePasswords);
-    if (newVisible.has(id)) {
-      newVisible.delete(id);
+    if (newVisible.has(passwordId)) {
+      newVisible.delete(passwordId);
     } else {
-      newVisible.add(id);
+      newVisible.add(passwordId);
     }
     setVisiblePasswords(newVisible);
+    console.log('New visible passwords:', newVisible);
   };
 
   const getCategoryIcon = (category) => {
@@ -134,54 +192,49 @@ const Dashboard = () => {
             </button>
           </div>
 
-          {/* Passwords Grid */}
+          {/* Password Grid */}
           {filteredPasswords.length === 0 ? (
             <div className="py-12 text-center">
-              <div className="mb-4 text-6xl text-white/40">🔒</div>
-              <h3 className="mb-2 text-xl font-semibold text-white">
-                {searchTerm ? 'No passwords found' : 'No passwords yet'}
-              </h3>
-              <p className="mb-6 text-white/60">
-                {searchTerm ? 'Try adjusting your search terms' : 'Start by adding your first password to secure your accounts'}
+              <Lock className="w-16 h-16 mx-auto mb-4 text-white/40" />
+              <h3 className="mb-2 text-xl font-semibold text-white">No passwords found</h3>
+              <p className="text-white/60">
+                {searchTerm ? 'Try adjusting your search terms.' : 'Add your first password to get started.'}
               </p>
-              {!searchTerm && (
-                <button
-                  onClick={() => setShowAddModal(true)}
-                  className="px-6 py-3 btn-primary"
-                >
-                  Add Your First Password
-                </button>
-              )}
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {filteredPasswords.map((password) => {
-                const CategoryIcon = getCategoryIcon(password.category);
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {filteredPasswords.map((pwd) => {
+                const IconComponent = getCategoryIcon(pwd.category);
+                const passwordId = pwd.id || pwd._id; // Handle both id formats
+                const isVisible = visiblePasswords.has(passwordId);
+
+                console.log('Rendering password:', pwd);
+                console.log('Password ID:', passwordId);
+                console.log('Password value:', pwd.password);
+                console.log('Is visible:', isVisible);
+
                 return (
-                  <div
-                    key={password.id}
-                    className="p-6 card"
-                  >
+                  <div key={passwordId} className="p-6 card group">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center space-x-3">
-                        <CategoryIcon className="w-8 h-8 text-blue-400" />
+                        <div className="p-3 rounded-xl bg-gradient-to-r from-blue-500/20 to-purple-500/20">
+                          <IconComponent className="w-5 h-5 text-blue-400" />
+                        </div>
                         <div>
-                          <h3 className="text-lg font-semibold text-white">{password.title}</h3>
-                          {password.website && (
-                            <p className="text-sm text-white/60">{password.website}</p>
-                          )}
+                          <h3 className="font-semibold text-white">{pwd.title}</h3>
+                          <p className="text-sm text-white/60">{pwd.website}</p>
                         </div>
                       </div>
-                      <div className="flex space-x-2">
+                      <div className="flex space-x-2 transition-opacity opacity-0 group-hover:opacity-100">
                         <button
-                          onClick={() => setEditingPassword(password)}
-                          className="transition-colors text-white/60 hover:text-blue-400"
+                          onClick={() => setEditingPassword(pwd)}
+                          className="p-2 transition-all rounded-lg text-white/60 hover:text-white hover:bg-white/10"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleDelete(password.id)}
-                          className="transition-colors text-white/60 hover:text-red-400"
+                          onClick={() => handleDelete(passwordId)}
+                          className="p-2 transition-all rounded-lg text-white/60 hover:text-red-400 hover:bg-red-500/10"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -189,50 +242,43 @@ const Dashboard = () => {
                     </div>
 
                     <div className="space-y-3">
-                      {password.email && (
+                      {pwd.email && (
                         <div>
-                          <label className="text-xs tracking-wide uppercase text-white/60">Email</label>
-                          <p className="text-sm text-white">{password.email}</p>
+                          <label className="block mb-1 text-xs font-medium text-white/60">Email</label>
+                          <p className="px-3 py-2 text-sm rounded-lg text-white/90 bg-white/5">{pwd.email}</p>
                         </div>
                       )}
 
-                      {password.username && (
+                      {pwd.username && (
                         <div>
-                          <label className="text-xs tracking-wide uppercase text-white/60">Username</label>
-                          <p className="text-sm text-white">{password.username}</p>
+                          <label className="block mb-1 text-xs font-medium text-white/60">Username</label>
+                          <p className="px-3 py-2 text-sm rounded-lg text-white/90 bg-white/5">{pwd.username}</p>
                         </div>
                       )}
 
                       <div>
-                        <label className="text-xs tracking-wide uppercase text-white/60">Password</label>
-                        <div className="flex items-center mt-1 space-x-2">
-                          <p className="flex-1 font-mono text-sm text-white">
-                            {visiblePasswords.has(password.id) ? password.password : '••••••••••••'}
-                          </p>
+                        <label className="block mb-1 text-xs font-medium text-white/60">Password</label>
+                        <div className="flex items-center space-x-2">
+                          <div className="flex-1 px-3 py-2 rounded-lg bg-white/5">
+                            <span className="font-mono text-sm text-white/90">
+                              {isVisible ? (pwd.password || '••••••••') : '••••••••'}
+                            </span>
+                          </div>
                           <button
-                            onClick={() => togglePasswordVisibility(password.id)}
-                            className="transition-colors text-white/60 hover:text-white"
+                            onClick={() => togglePasswordVisibility(passwordId)}
+                            className="p-2 transition-all rounded-lg text-white/60 hover:text-white hover:bg-white/10"
                           >
-                            {visiblePasswords.has(password.id) ?
-                              <EyeOff className="w-4 h-4" /> :
-                              <Eye className="w-4 h-4" />
-                            }
+                            {isVisible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                           </button>
                         </div>
                       </div>
 
-                      {password.notes && (
+                      {pwd.notes && (
                         <div>
-                          <label className="text-xs tracking-wide uppercase text-white/60">Notes</label>
-                          <p className="text-sm text-white/80">{password.notes}</p>
+                          <label className="block mb-1 text-xs font-medium text-white/60">Notes</label>
+                          <p className="px-3 py-2 text-sm rounded-lg text-white/70 bg-white/5">{pwd.notes}</p>
                         </div>
                       )}
-                    </div>
-
-                    <div className="pt-4 mt-4 border-t border-white/10">
-                      <p className="text-xs text-white/40">
-                        Added {new Date(password.createdAt).toLocaleDateString()}
-                      </p>
                     </div>
                   </div>
                 );
