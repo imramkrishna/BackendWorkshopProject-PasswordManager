@@ -28,31 +28,27 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchPasswords = async () => {
       if (!user?.id && !user?._id) {
-        console.log('No user ID available');
+
         return;
       }
 
       try {
         const token = localStorage.getItem('token');
         if (!token) {
-          console.log('No token available');
+
           return;
         }
-
-        console.log('Fetching passwords...');
         const response = await axios.get(`${API_URL}/profile`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
         });
 
-        console.log('API Response:', response.data);
 
         if (response.data.passwords && Array.isArray(response.data.passwords)) {
           setPasswordsFromAPI(response.data.passwords);
-          console.log('Passwords set:', response.data.passwords);
         } else {
-          console.log('No passwords in response or invalid format');
+          return;
         }
 
       } catch (error) {
@@ -139,8 +135,6 @@ const Dashboard = () => {
 
   // Fix: Improved toggle function with better ID handling
   const togglePasswordVisibility = (passwordId) => {
-    console.log('Toggling password visibility for ID:', passwordId);
-    console.log('Current visible passwords:', visiblePasswords);
 
     const newVisible = new Set(visiblePasswords);
     if (newVisible.has(passwordId)) {
@@ -149,7 +143,6 @@ const Dashboard = () => {
       newVisible.add(passwordId);
     }
     setVisiblePasswords(newVisible);
-    console.log('New visible passwords:', newVisible);
   };
 
   const getCategoryIcon = (category) => {
@@ -208,10 +201,6 @@ const Dashboard = () => {
                 const passwordId = pwd.id || pwd._id; // Handle both id formats
                 const isVisible = visiblePasswords.has(passwordId);
 
-                console.log('Rendering password:', pwd);
-                console.log('Password ID:', passwordId);
-                console.log('Password value:', pwd.password);
-                console.log('Is visible:', isVisible);
 
                 return (
                   <div key={passwordId} className="p-6 card group">
