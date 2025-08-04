@@ -33,7 +33,9 @@ const Login = () => {
     }
     try {
       const response = await axios.post(`${API_URL}/login`, formData);
-      localStorage.setItem('token', response.data.accessToken);
+      localStorage.setItem('Accesstoken', response.data.accessToken);
+      localStorage.setItem('Refreshtoken', response.data.refreshToken);
+      localStorage.setItem('expDate', JSON.stringify(response.data.expDate));
       login(response.data.user);
       navigate('/dashboard');
     } catch (error) {
