@@ -33,7 +33,7 @@ const Dashboard = () => {
       }
 
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('Accesstoken');
         if (!token) {
 
           return;
